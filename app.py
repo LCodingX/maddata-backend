@@ -68,6 +68,8 @@ def convert_currency(usd_price, control_price):
     """
     if usd_price == None or control_price == None:
         return None
+    usd_price = float(usd_price)
+    control_price = float(control_price)
     return usd_price/control_price
 
 def first_letter_uppercase(string):
