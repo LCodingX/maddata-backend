@@ -66,7 +66,7 @@ def convert_currency(usd_price, control_price):
     """
     This function takes a price in USD and a price in the control currency and returns the price in the control currency
     """
-    if usd_price == None or control_price == None:
+    if usd_price == 'nan' or control_price == 'nan' or usd_price == None or control_price == None:
         return None
     usd_price = float(usd_price)
     control_price = float(control_price)
@@ -129,7 +129,9 @@ def getProducts(product):
             else:
                 data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', first_letter_uppercase(country)).execute().data
                 for dict in data:
-                    controlled_data[dict['city']] = convert_currency(dict[substitute_product_to_index(product)],dict[substitute_product_to_index(control)])
+                    converted_price = convert_currency(dict[substitute_product_to_index(product)],dict[substitute_product_to_index(control)])
+                    if converted_price != None:
+                        controlled_data[dict['city']] = converted_price
                 return jsonify(controlled_data)
     except Exception as e:
         print("Error fetching data:", str(e))
