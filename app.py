@@ -9,7 +9,7 @@ from supabase import create_client
 
 # Create a Flask app
 app = Flask(__name__)
-app.config.from_env()
+app.config.from_prefixed_env()
 # Create a Supabase client
 supabase = create_client(
     app.config["DATABASE_URL"],
@@ -17,6 +17,10 @@ supabase = create_client(
 )
 
 # Define a route to get all users
+@app.route("/hello-world", method=["GET"])
+def hello():
+    return "hello world"
+
 @app.route("/", method=["GET"])
 def get():
     data = supabase.table("cost-of-living").select("city").eq("city", "Seoul").execute()
