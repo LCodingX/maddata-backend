@@ -7,6 +7,11 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from supabase import create_client
 import json
 
+def get_average(data):
+    sum = 0
+    for i in data:
+        sum += i
+    return sum / len(data)
 
 
 # Create a Flask app
@@ -29,9 +34,58 @@ def hello():
 
 @app.route("/")
 def get():
-    data = supabase.table("cost-of-living").select("*").execute().data
+    data = supabase.table("cost-of-living").select("*").execute()
     print(data)
     return json.dumps(data)
+
+
+
+@app.route("/countries", methods=['GET'])
+def getCountries():
+    try:
+        response = supabase.table('cost-of-living').select("city").eq("country", "United States").execute()
+        print(response)
+        return jsonify(response.data)
+    except Exception as e:
+        print("Error fetching data:", str(e))
+        return jsonify({"error": "Failed to fetch data"}), 500
+    
+@app.route("/api/city", methods=['GET'])
+def getCity():
+    filter = request.args.get('city')
+    try:
+        response = supabase.table('cost-of-living').select("*").eq("city", filter).execute()
+        print(response)
+        return jsonify(response.data)
+    except Exception as e:
+        print("Error fetching data:", str(e))
+        return jsonify({"error": "Failed to fetch data"}), 500
+    
+@app.route("/api/products/<product>/", methods=['GET'])
+def getProducts(product):
+    try:
+        control = request.args.get('control')
+        if control is None:
+            control = 'USD'
+
+        country = request.args.get('country')
+        if country is None:
+            country = 'All'
+        
+        if country == 'All':
+            response = supabase.table('cost-of-living').select("country", ).eq("", product).execute()
+
+
+
+        index = product # TODO: set index
+        response = supabase.table('cost-of-living').select(index).execute()
+        print(response)
+        return jsonify(response.data)
+    except Exception as e:
+        print("Error fetching data:", str(e))
+        return jsonify({"error": "Failed to fetch data"}), 500
+
+
 
 
 # Start the Flask app
