@@ -17,11 +17,11 @@ supabase = create_client(
 )
 
 # Define a route to get all users
-@app.route("/hello-world", method=["GET"])
+@app.route("/hello-world")
 def hello():
     return "hello world"
 
-@app.route("/", method=["GET"])
+@app.route("/")
 def get():
     data = supabase.table("cost-of-living").select("city").eq("city", "Seoul").execute()
     return jsonify(data)
