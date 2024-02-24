@@ -17,7 +17,7 @@ def get_average(data):
 
 # Define a function to substitute a product name to an index in the form of xn
 def substitute_product_to_index(product):
-    return None
+    return xdict[product]
 
 # Define a function to calculate the price of a pizza
 def pizza_price(bread, cheese, tomato):
@@ -45,16 +45,27 @@ def hello():
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
     try:
+        xdict[product] #if key doesn't exist, an error will be thrown
         control = request.args.get('control')
         if control is None:
-            control = 'USD'
-
+            control = 'usd'
+        elif (control!='usd'):
+            xdict[control] #same thing here
         country = request.args.get('country')
         if country is None:
-            country = 'All'
+            country = 'all'
         
-        if country == 'All':
-            response = supabase.table('cost-of-living').select("country", substitute_product_to_index(product)).execute()
+        if country == 'all':
+            #TODO Countries All
+            response = supabase.table('cost-of-living').select(f"country, {xdict.get(product)}").execute().data
+            for dict in response:
+                control_price=1
+                if control!="usd":
+                    control_price=supabase.table('cost-of-living').eq("country", \
+                        dict["country"]).select(xdict.get(control)).execute().data[0][xdict.get(control)]
+                dict[product]=dict[xdict.get(product)]/control_price
+                del dict[xdict.get(product)]
+            return jsonify(response)
             # implement average
         else:
             response = supabase.table('cost-of-living').select("country", substitute_product_to_index(product)).eq('country', country).execute()
