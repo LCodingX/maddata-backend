@@ -8,12 +8,45 @@ from supabase import create_client
 import json
 from xdict import xdict
 
-# Define a function to get the average of a list of numbers
-def get_average(data):
-    sum = 0
-    for i in data:
-        sum += i
-    return sum / len(data)
+# gets the average cost of the product per control unit for all countries
+def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
+    country_dict_product = {}
+    for dict in product_res:
+        if (dict[product] == None) or (dict[product] == "nan"): 
+            continue
+        if dict["country"] not in country_dict_product.keys():
+            country_dict_product[dict["country"]]=[1, float(dict[product])]
+        else:
+            country_dict_product[dict["country"]][0]+=1
+            country_dict_product[dict["country"]][1]+=float(dict[product])
+    final_res = {}
+    final_res_control={}
+    for country in country_dict_product.keys():
+        final_res[country]=country_dict_product[country][1]/country_dict_product[country][0]
+    print(final_res["United States"])
+    if len(control_res)>0:    
+        country_dict_control = {}
+        for dict in control_res:
+            if (dict[control] == None) or (dict[control] == "nan"): 
+                continue
+            if dict["country"] not in country_dict_control.keys():
+                country_dict_control[dict["country"]]=[1, float(dict[control])]
+            else:
+                country_dict_control[dict["country"]][0]+=1
+                country_dict_control[dict["country"]][1]+=float(dict[control])
+        final_res_control = {}
+        for country in country_dict_control.keys():
+            final_res_control[country]=(country_dict_control[country][1]/country_dict_control[country][0])   
+    else:
+        return final_res    
+    for country in country_dict_product.keys():
+        if country not in final_res_control.keys():
+            del final_res[country]
+        else:
+            final_res[country] /= final_res_control[country]
+    print(final_res_control["United States"])
+    print(final_res["United States"])
+    return final_res
 
 def substitute_product_to_index(product):
     """
@@ -21,6 +54,7 @@ def substitute_product_to_index(product):
     """
     return xdict.get(product)
     
+
 def pizza_price(bread, cheese, tomato):
     """
     This function takes the price of bread, cheese, and tomato and returns the price of a pizza
@@ -42,8 +76,6 @@ app = Flask(__name__)
 # Create a Supabase client
 database_url = os.environ.get('FLASK_DATABASE_URL')
 database_key = os.environ.get('FLASK_DATABASE_KEY')
-print(database_url)
-print(database_key)
 
 supabase = create_client(
     database_url,
@@ -58,20 +90,28 @@ def hello():
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
     try:
-        data = []
+
+        xdict[product] #if key doesn't exist, an error will be thrown
         control = request.args.get('control')
         if control is None:
             control = 'usd'
-        else:
-            control = control.lower()
+        elif (control!='usd'):
+            xdict[control] #same thing here
 
         country = request.args.get('country')
         if country is None:
             country = 'all'
         
         if country == 'all':
-            data = supabase.table('cost-of-living').select(f"country", (substitute_product_to_index(product))).execute()
-            # implement average
+            res = []
+            response = supabase.table('cost-of-living').select(f"country, {substitute_product_to_index(product)}").execute().data
+            
+            if (control!='usd'):
+                control_response=supabase.table('cost-of-living').select(f"country, {substitute_product_to_index(control)}").execute().data
+                res = get_avg_all_countries(response, substitute_product_to_index(product), substitute_product_to_index(control), control_response)
+            else:
+                res = get_avg_all_countries(response, substitute_product_to_index(product))
+            return jsonify(res)
         else:
             data = supabase.table('cost-of-living').select(f"country", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', country).execute()
             
