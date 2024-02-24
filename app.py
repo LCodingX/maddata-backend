@@ -6,6 +6,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from supabase import create_client
 import json
+from xdict import xdict
 
 # Define a function to get the average of a list of numbers
 def get_average(data):
@@ -40,7 +41,7 @@ supabase = create_client(
 @app.route("/hello-world")
 def hello():
     return "hello world"
-    
+  
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
     try:
