@@ -6,6 +6,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from supabase import create_client
 import json
+from xdict import xdict
 
 # Define a function to get the average of a list of numbers
 def get_average(data):
@@ -14,14 +15,27 @@ def get_average(data):
         sum += i
     return sum / len(data)
 
-# Define a function to substitute a product name to an index in the form of xn
 def substitute_product_to_index(product):
-    return None
-
-# Define a function to calculate the price of a pizza
+    """
+    This function takes a product name and returns the corresponding index in the form of xn
+    """
+    return xdict.get(product)
+    
 def pizza_price(bread, cheese, tomato):
+    """
+    This function takes the price of bread, cheese, and tomato and returns the price of a pizza
+    """
     pizza = 0.5 * bread + 1 * cheese + 0.3 * tomato
     return pizza
+
+def convert_currency(usd_price, control_price):
+    """
+    This function takes a price in USD and a price in the control currency and returns the price in the control currency
+    """
+    return usd_price/control_price
+
+def get_currency_price(data, country, control):
+    pass
 
 # Create a Flask app
 app = Flask(__name__)
@@ -40,26 +54,31 @@ supabase = create_client(
 @app.route("/hello-world")
 def hello():
     return "hello world"
-    
+  
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
     try:
+        data = []
         control = request.args.get('control')
         if control is None:
-            control = 'USD'
+            control = 'usd'
+        else:
+            control = control.lower()
 
         country = request.args.get('country')
         if country is None:
-            country = 'All'
+            country = 'all'
         
-        if country == 'All':
-            response = supabase.table('cost-of-living').select("country", substitute_product_to_index(product)).execute()
+        if country == 'all':
+            data = supabase.table('cost-of-living').select(f"country", (substitute_product_to_index(product))).execute()
             # implement average
         else:
-            response = supabase.table('cost-of-living').select("country", substitute_product_to_index(product)).eq('country', country).execute()
-
-        # TODO: add control currency conversion
-        controlled_data = []
+            data = supabase.table('cost-of-living').select(f"country", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', country).execute()
+            
+        if control == 'usd':
+            controlled_data = data
+        else:
+            controlled_data = convert_currency(data, get_currency_price(data, country, substitute_product_to_index(control)))
 
         return jsonify(controlled_data)
     except Exception as e:
