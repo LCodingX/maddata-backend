@@ -66,10 +66,17 @@ def convert_currency(usd_price, control_price):
     """
     This function takes a price in USD and a price in the control currency and returns the price in the control currency
     """
+    if usd_price == 'nan' or control_price == 'nan' or usd_price == None or control_price == None:
+        return None
+    usd_price = float(usd_price)
+    control_price = float(control_price)
     return usd_price/control_price
 
-def get_currency_price(data, country, control):
-    pass
+def first_letter_uppercase(string):
+    """
+    This function takes a string and returns the string with the first letter in uppercase
+    """
+    return string[0].upper() + string[1:]
 
 # Create a Flask app
 app = Flask(__name__)
@@ -101,7 +108,6 @@ def getProducts(product):
         country = request.args.get('country')
         if country is None:
             country = 'all'
-        
         if country == 'all':
             res = []
             response = supabase.table('cost-of-living').select(f"country, {substitute_product_to_index(product)}").execute().data
@@ -113,14 +119,20 @@ def getProducts(product):
                 res = get_avg_all_countries(response, substitute_product_to_index(product))
             return jsonify(res)
         else:
-            data = supabase.table('cost-of-living').select(f"country", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', country).execute()
-            
-        if control == 'usd':
-            controlled_data = data
-        else:
-            controlled_data = convert_currency(data, get_currency_price(data, country, substitute_product_to_index(control)))
+            controlled_data = {}
+            if control == 'usd':
+                data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product))).eq('country', first_letter_uppercase(country)).execute().data
 
-        return jsonify(controlled_data)
+                for dict in data:
+                    controlled_data[dict['city']] = dict[substitute_product_to_index(product)]
+                return jsonify(controlled_data)
+            else:
+                data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', first_letter_uppercase(country)).execute().data
+                for dict in data:
+                    converted_price = convert_currency(dict[substitute_product_to_index(product)],dict[substitute_product_to_index(control)])
+                    if converted_price != None:
+                        controlled_data[dict['city']] = converted_price
+                return jsonify(controlled_data)
     except Exception as e:
         print("Error fetching data:", str(e))
         return jsonify({"error": "Failed to fetch data"}), 500
