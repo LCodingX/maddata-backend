@@ -62,6 +62,13 @@ def pizza_price(bread, cheese, tomato):
     pizza = 0.5 * bread + 1 * cheese + 0.3 * tomato
     return pizza
 
+def burger_price(bread, meat, tomato, lettuce):
+    """
+    This function takes the price of bread, meat, tomato, and lettuce and returns the price of a burger
+    """
+    burger = 0.4 * bread + 0.2 * meat + 0.035 * tomato + 0.05 * lettuce
+    return burger
+
 def convert_currency(usd_price, control_price):
     """
     This function takes a price in USD and a price in the control currency and returns the price in the control currency
