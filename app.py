@@ -7,12 +7,22 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from supabase import create_client
 import json
 from xdict import xdict
+
+# Define a function to get the average of a list of numbers
 def get_average(data):
     sum = 0
     for i in data:
         sum += i
     return sum / len(data)
 
+# Define a function to substitute a product name to an index in the form of xn
+def substitute_product_to_index(product):
+    return None
+
+# Define a function to calculate the price of a pizza
+def pizza_price(bread, cheese, tomato):
+    pizza = 0.5 * bread + 1 * cheese + 0.3 * tomato
+    return pizza
 
 # Create a Flask app
 app = Flask(__name__)
@@ -31,7 +41,7 @@ supabase = create_client(
 @app.route("/hello-world")
 def hello():
     return "hello world"
-
+  
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
     try:
@@ -44,14 +54,15 @@ def getProducts(product):
             country = 'All'
         
         if country == 'All':
-            response = supabase.table('cost-of-living').select("country", ).eq("", product).execute()
+            response = supabase.table('cost-of-living').select("country", substitute_product_to_index(product)).execute()
+            # implement average
+        else:
+            response = supabase.table('cost-of-living').select("country", substitute_product_to_index(product)).eq('country', country).execute()
 
+        # TODO: add control currency conversion
+        controlled_data = []
 
-
-        index = product # TODO: set index
-        response = supabase.table('cost-of-living').select(index).execute()
-        print(response)
-        return jsonify(response.data)
+        return jsonify(controlled_data)
     except Exception as e:
         print("Error fetching data:", str(e))
         return jsonify({"error": "Failed to fetch data"}), 500
