@@ -142,6 +142,18 @@ def getProducts(product):
         print("Error fetching data:", str(e))
         return jsonify({"error": "Failed to fetch data"}), 500
 
+@app.route("/api/countries/", methods=['GET'])
+def getCountries():
+    try:
+        data = supabase.table('cost-of-living').select('country').execute().data
+        countries = []
+        for dict in data:
+            countries.append(dict['country'])
+        return jsonify(countries)
+    except Exception as e:
+        print("Error fetching data:", str(e))
+        return jsonify({"error": "Failed to fetch data"}), 500
+
 
 
 
