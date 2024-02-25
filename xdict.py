@@ -56,7 +56,8 @@ xdict = {
     "twenty-year-mortgage-interest-rate": "x55",
     "pizza": "x56",
     "burger": "x57",
-    "big-mac": "x58"
+    "big-mac": "x58",
+    "gdp-billions": "x59"
 }
 '''
 x1	Meal, Inexpensive Restaurant (USD)
