@@ -82,7 +82,7 @@ def first_letter_uppercase(string):
 
 # Create a Flask app
 app = Flask(__name__)
-cors = CORS(app)
+CORS(app)
 
 # Create a Supabase client
 database_url = os.environ.get('FLASK_DATABASE_URL')
