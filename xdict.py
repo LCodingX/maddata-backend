@@ -54,6 +54,9 @@ xdict = {
     "month-rent-per-sqm-outside-city-centre": "x53",
     "avg-montly-salary-after-tax": "x54",
     "twenty-year-mortgage-interest-rate": "x55",
+    "pizza-price": "x56",
+    "burger-price": "x57",
+    "bigmac-price": "x58"
 }
 '''
 x1	Meal, Inexpensive Restaurant (USD)

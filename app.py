@@ -59,7 +59,7 @@ def pizza_price(bread, cheese, tomato):
     """
     This function takes the price of bread, cheese, and tomato and returns the price of a pizza
     """
-    pizza = 0.5 * bread + 1 * cheese + 0.3 * tomato
+    pizza = 1 * bread + 1 * cheese + 0.3 * tomato
     return pizza
 
 def convert_currency(usd_price, control_price):
@@ -93,7 +93,33 @@ supabase = create_client(
 @app.route("/hello-world")
 def hello():
     return "hello world"
-  
+
+@app.route("/api/fill/pizza", methods=["GET"])
+def fill_pizza():
+    response = supabase.table('cost-of-living').select(f"city, x10, x13, x19").execute().data
+    city_pizza_cost = {}
+    for dict in response:
+        if (dict["x10"]!="nan" and dict["x13"]!="nan" and dict["x19"]!="nan"):
+            supabase.table("cost-of-living").update({"x56": \
+                pizza_price(float(dict["x10"]), float(dict["x13"]), float(dict["x19"]))}).eq("city", dict["city"]).execute()
+    #for dict in response:
+    #    supabase.table("cost-of-living").update({"x56": city_pizza_cost[dict["city"]]}).eq("city", dict["city"]).execute()
+    return "finished :)"
+
+@app.route("/api/fill/burger", methods=["GET"])
+def fill_burger():
+    #not done
+    response = supabase.table('cost-of-living').select(f"city, x10, x13, x19").execute().data
+    
+    city_pizza_cost = {}
+    for dict in response:
+        if (dict["x10"]!="nan" and dict["x13"]!="nan" and dict["x19"]!="nan"):
+            supabase.table("cost-of-living").update({"x56": \
+                pizza_price(float(dict["x10"]), float(dict["x13"]), float(dict["x19"]))}).eq("city", dict["city"]).execute()
+    #for dict in response:
+    #    supabase.table("cost-of-living").update({"x56": city_pizza_cost[dict["city"]]}).eq("city", dict["city"]).execute()
+    return "finished :)"
+
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
     try:
