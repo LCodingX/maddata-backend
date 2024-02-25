@@ -129,16 +129,24 @@ def getProducts(product):
             if control == 'usd':
                 data = supabase.table('cost-of-living').select(f"city, {(substitute_product_to_index(product))}").eq('country', country).execute().data
                 print(data)
+                prices = [float(dict[substitute_product_to_index(product)].replace(",", "")) for dict in data if dict[substitute_product_to_index(product)] not in [None, "nan"]]
+
                 for dict in data:
                     if dict[substitute_product_to_index(product)] !=None:
                         controlled_data[dict['city']] = dict[substitute_product_to_index(product)]
+                if len(set(prices))==1:
+                    return jsonify({country: prices[0]})   
                 return jsonify(controlled_data)
             else:
                 data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', country).execute().data
+                prices = [convert_currency(dict[substitute_product_to_index(product)], dict[substitute_product_to_index(control)]) for dict in data if dict[substitute_product_to_index(product)] not in [None, "nan"] and dict[substitute_product_to_index(control)] not in [None, "nan"]]
+
                 for dict in data:
                     converted_price = convert_currency(dict[substitute_product_to_index(product)],dict[substitute_product_to_index(control)])
                     if converted_price != None:
                         controlled_data[dict['city']] = converted_price
+                if len(set(prices))==1:
+                    return jsonify({country: prices[0]})   
                 return jsonify(controlled_data)
     except Exception as e:
         print("Error fetching data:", str(e))
