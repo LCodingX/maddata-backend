@@ -134,7 +134,7 @@ def getProducts(product):
                 for dict in data:
                     if dict[substitute_product_to_index(product)] !=None:
                         controlled_data[dict['city']] = dict[substitute_product_to_index(product)]
-                if len(set(prices))<4:
+                if len(set(prices))<4 and len(set(prices))>0:
                     return jsonify({country: prices[0]})   
                 return jsonify(controlled_data)
             else:
@@ -145,7 +145,7 @@ def getProducts(product):
                     converted_price = convert_currency(dict[substitute_product_to_index(product)],dict[substitute_product_to_index(control)])
                     if converted_price != None:
                         controlled_data[dict['city']] = converted_price
-                if len(set(prices))<4:
+                if len(set(prices))<4 and len(set(prices))>0:
                     return jsonify({country: prices[0]})   
                 return jsonify(controlled_data)
     except Exception as e:
