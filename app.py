@@ -17,10 +17,10 @@ def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
         if (dict[product] == None) or (dict[product] == "nan"): 
             continue
         if dict["country"] not in country_dict_product.keys():
-            country_dict_product[dict["country"]]=[1, float(dict[product])]
+            country_dict_product[dict["country"]]=[1, float(dict[product].replace(",",""))]
         else:
             country_dict_product[dict["country"]][0]+=1
-            country_dict_product[dict["country"]][1]+=float(dict[product])
+            country_dict_product[dict["country"]][1]+=float(dict[product].replace(",",""))
     final_res = {}
     final_res_control={}
     for country in country_dict_product.keys():
@@ -31,10 +31,10 @@ def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
             if (dict[control] == None) or (dict[control] == "nan"): 
                 continue
             if dict["country"] not in country_dict_control.keys():
-                country_dict_control[dict["country"]]=[1, float(dict[control])]
+                country_dict_control[dict["country"]]=[1, float(dict[control].replace(",",""))]
             else:
                 country_dict_control[dict["country"]][0]+=1
-                country_dict_control[dict["country"]][1]+=float(dict[control])
+                country_dict_control[dict["country"]][1]+=float(dict[control].replace(",",""))
         final_res_control = {}
         for country in country_dict_control.keys():
             final_res_control[country]=(country_dict_control[country][1]/country_dict_control[country][0])   
@@ -67,8 +67,8 @@ def convert_currency(usd_price, control_price):
     """
     if usd_price == 'nan' or control_price == 'nan' or usd_price == None or control_price == None:
         return None
-    usd_price = float(usd_price)
-    control_price = float(control_price)
+    usd_price = float(usd_price.replace(",",""))
+    control_price = float(control_price.replace(",",""))
     return usd_price/control_price
 
 def first_letter_uppercase(string):
