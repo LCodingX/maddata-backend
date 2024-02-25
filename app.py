@@ -25,7 +25,6 @@ def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
     final_res_control={}
     for country in country_dict_product.keys():
         final_res[country]=country_dict_product[country][1]/country_dict_product[country][0]
-    print(final_res["United States"])
     if len(control_res)>0:    
         country_dict_control = {}
         for dict in control_res:
@@ -46,8 +45,6 @@ def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
             del final_res[country]
         else:
             final_res[country] /= final_res_control[country]
-    print(final_res_control["United States"])
-    print(final_res["United States"])
     return final_res
 
 def substitute_product_to_index(product):
@@ -113,6 +110,9 @@ def getProducts(product):
         country = request.args.get('country')
         if country is None:
             country = 'all'
+            
+        print("country " + country)
+        print("product " + product)
         if country == 'all':
             res = []
             response = supabase.table('cost-of-living').select(f"country, {substitute_product_to_index(product)}").execute().data
@@ -125,14 +125,16 @@ def getProducts(product):
             return jsonify(res)
         else:
             controlled_data = {}
+            print("control " + control)
             if control == 'usd':
-                data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product))).eq('country', first_letter_uppercase(country)).execute().data
-
+                data = supabase.table('cost-of-living').select(f"city, {(substitute_product_to_index(product))}").eq('country', country).execute().data
+                print(data)
                 for dict in data:
-                    controlled_data[dict['city']] = dict[substitute_product_to_index(product)]
+                    if dict[substitute_product_to_index(product)] !=None:
+                        controlled_data[dict['city']] = dict[substitute_product_to_index(product)]
                 return jsonify(controlled_data)
             else:
-                data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', first_letter_uppercase(country)).execute().data
+                data = supabase.table('cost-of-living').select(f"city", (substitute_product_to_index(product)), (substitute_product_to_index(control))).eq('country', country).execute().data
                 for dict in data:
                     converted_price = convert_currency(dict[substitute_product_to_index(product)],dict[substitute_product_to_index(control)])
                     if converted_price != None:
