@@ -146,13 +146,14 @@ def getProducts(product):
 def getCountries():
     try:
         data = supabase.table('cost-of-living').select('country').execute().data
-        countries = []
+        unique_countries = set()
         for dict in data:
-            countries.append(dict['country'])
-        return jsonify(countries)
+            unique_countries.add(dict['country'])
+        return jsonify(list(unique_countries))
     except Exception as e:
         print("Error fetching data:", str(e))
         return jsonify({"error": "Failed to fetch data"}), 500
+    
 
 
 
