@@ -7,6 +7,8 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from supabase import create_client
 import json
 from xdict import xdict
+from flask_cors import CORS
+
 
 # gets the average cost of the product per control unit for all countries
 def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
@@ -80,6 +82,8 @@ def first_letter_uppercase(string):
 
 # Create a Flask app
 app = Flask(__name__)
+cors = CORS(app)
+
 # Create a Supabase client
 database_url = os.environ.get('FLASK_DATABASE_URL')
 database_key = os.environ.get('FLASK_DATABASE_KEY')
