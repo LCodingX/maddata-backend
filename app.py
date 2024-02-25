@@ -7,7 +7,6 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from supabase import create_client
 import json
 from xdict import xdict
-import pandas as pd
 
 # gets the average cost of the product per control unit for all countries
 def get_avg_all_countries(product_res, product, control="usd", control_res=[]):
@@ -60,7 +59,7 @@ def pizza_price(bread, cheese, tomato):
     """
     This function takes the price of bread, cheese, and tomato and returns the price of a pizza
     """
-    pizza = 1 * bread + 1 * cheese + 0.3 * tomato
+    pizza = 0.5 * bread + 1 * cheese + 0.3 * tomato
     return pizza
 
 def convert_currency(usd_price, control_price):
@@ -95,54 +94,6 @@ supabase = create_client(
 def hello():
     return "hello world"
 
-@app.route("/api/fill/pizza", methods=["GET"])
-def fill_pizza():
-    response = supabase.table('cost-of-living').select(f"city, x10, x13, x19").execute().data
-    city_pizza_cost = {}
-    for dict in response:
-        if (dict["x10"]!="nan" and dict["x13"]!="nan" and dict["x19"]!="nan"):
-            supabase.table("cost-of-living").update({"x56": \
-                pizza_price(float(dict["x10"]), float(dict["x13"]), float(dict["x19"]))}).eq("city", dict["city"]).execute()
-    #for dict in response:
-    #    supabase.table("cost-of-living").update({"x56": city_pizza_cost[dict["city"]]}).eq("city", dict["city"]).execute()
-    return "finished :)"
-
-@app.route("/api/fill/burger", methods=["GET"])
-def fill_burger():
-    #not done
-    response = supabase.table('cost-of-living').select(f"city, x10, x22, x15, x19").execute().data
-    for dict in response:
-        if (dict["x10"]!="nan" and dict["x15"]!="nan" and dict["x19"]!="nan" and dict["x22"]!="nan"):
-            supabase.table("cost-of-living").update({"x57": \
-                burger_price(float(dict["x10"]), float(dict["x15"]), float(dict["x19"]), float(dict["x22"]))}).eq("city", dict["city"]).execute()
-    #for dict in response:
-    #    supabase.table("cost-of-living").update({"x56": city_pizza_cost[dict["city"]]}).eq("city", dict["city"]).execute()
-    return "finished :)"
-
-@app.route("/api/fill/bigmac", methods=["GET"])
-def fill_bigmac():
-    # Read the CSV file, ensuring the date column is parsed as datetime
-    df = pd.read_csv('big-mac-raw-index.csv', parse_dates=['date'])
-
-    # Filter the DataFrame for rows where the date is 2022-01-01
-    filtered_df = df[df['date'] == '2022-01-01']
-
-    # Select only the 'country' and 'dollar_value' columns
-    result = filtered_df[['name', 'dollar_price']]
-    grouped_df = filtered_df.groupby('name')['dollar_price'].sum()
-
-    # Convert the Series to a dictionary
-    result_dict = grouped_df.to_dict()
-
-    # Display the result
-    print(result_dict)
-    response = supabase.table('cost-of-living').select(f"city, country").execute().data
-    for dict in response:
-        if (dict["country"] in result_dict.keys()):
-            supabase.table("cost-of-living").update({"x58": result_dict[dict["country"]]}).eq("city", dict["city"]).execute()
-        
-    # Display the result
-    return "finished :)"
 
 @app.route("/api/products/<product>/", methods=['GET'])
 def getProducts(product):
